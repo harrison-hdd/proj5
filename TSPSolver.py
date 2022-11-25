@@ -110,13 +110,19 @@ class TSPSolver:
         max queue size, total number of states created, and number of pruned states.</returns> 
     '''
 
-    def branchAndBound(self, time_allowance=10.0):
+    def branchAndBound(self, time_allowance=60.0):
+        startTime = time.time()
+        greedyRes = self.greedy(self._scenario)
+        if greedyRes is None:
+            return None
+
         results = {}
         solver: BrandAndBoundSolver = BrandAndBoundSolver()
+        solver.bestCostSoFar = greedyRes['cost']
 
-        solver.solve(self._scenario, time_allowance)
-        cost = np.inf
-        solution = None
+        solver.solve(self._scenario, time_allowance, startTime)
+        cost = greedyRes['cost']
+        solution = greedyRes['soln']
 
         if solver.solutionFound:
             listOfCities = []

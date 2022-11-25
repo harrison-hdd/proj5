@@ -14,15 +14,15 @@ class BrandAndBoundSolver:
         self.numPrunedStates = 0
         self.maxQSize = 1
         self.totalStates = 1
-        self.numSolutions = -1
+        self.numSolutions = 0
         self.currBestState: State = None
 
         self.timeElapsed = 0
         self.solutionFound = False
+        self.bestCostSoFar = np.inf
         pass
 
-    def solve(self, scenario: Scenario, time_allowance):
-        startTime = time.time()
+    def solve(self, scenario: Scenario, time_allowance, startTime):
 
         numPruned = 0
         initialState: State = State(scenario)
@@ -46,6 +46,7 @@ class BrandAndBoundSolver:
 
                 if not self.__shouldPrune(currState):
                     self.currBestState = currState
+                    self.bestCostSoFar = currState.lowerBound
                     self.solutionFound = True
                     self.numSolutions += 1
                 else:
@@ -64,7 +65,7 @@ class BrandAndBoundSolver:
                 childState.path.append(city)
                 childState.lowerBound += childState.matrix[row][col]
 
-                if self.__shouldPrune(childState, self.currBestState):
+                if self.__shouldPrune(childState):
                     self.numPrunedStates += 1
                     continue
 
@@ -72,7 +73,7 @@ class BrandAndBoundSolver:
                 childState.setVisited(col)
                 childState.reduce()
 
-                if self.__shouldPrune(childState, self.currBestState):
+                if self.__shouldPrune(childState):
                     self.numPrunedStates += 1
                     continue
 
@@ -81,9 +82,10 @@ class BrandAndBoundSolver:
 
             self.timeElapsed = time.time() - startTime
 
-    def __shouldPrune(self, state: State, bssf: State = None):
+    def __shouldPrune(self, state: State):
         if state.lowerBound == np.inf:
             return True
-        if bssf == None:
-            return False
-        return state.lowerBound >= bssf.lowerBound
+        if state.lowerBound > self.bestCostSoFar:
+            return True
+
+        return False
