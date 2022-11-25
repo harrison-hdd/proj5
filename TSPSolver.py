@@ -4,6 +4,7 @@ import heapq
 import threading
 
 import BranchAndBoundSolver
+from GreedySolver import GreedySolver
 import State
 from State import State
 from which_pyqt import PYQT_VER
@@ -84,7 +85,21 @@ class TSPSolver:
     '''
 
     def greedy(self, time_allowance=60.0):
-        pass
+        results = {}
+        solver: GreedySolver = GreedySolver()
+
+        startTime = time.time()
+        solution: TSPSolution = solver.solve(self._scenario)
+        duration = time.time() - startTime
+
+        results['cost'] = np.inf if solution is None else solution.cost
+        results['time'] = duration
+        results['count'] = 1 if solution is not None else 0
+        results['soln'] = solution
+        results['max'] = None
+        results['total'] = None
+        results['pruned'] = None
+        return results
 
     ''' <summary>
         This is the entry point for the branch-and-bound algorithm that you will implement
@@ -119,8 +134,6 @@ class TSPSolver:
         results['total'] = solver.totalStates
         results['pruned'] = solver.numPrunedStates
         return results
-
-
 
     # ''' <summary>
     # 	This is the entry point for the algorithm you'll write for your group project.
